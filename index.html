@@ -12,6 +12,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
   :root {
     color-scheme: light;
@@ -370,15 +373,20 @@
     goals: []
   };
 
-  var state = loadState();
-  var currentMonth = startOfMonth(new Date());
-  var currentTab = 'calendar';
-  var activeDayKey = null;
-  var editingGoalId = null;
-  var calFilter = 'all';
-  var goalsFilter = 'all';
-  var selectedEventOwner = 'both';
-  var selectedGoalOwner = 'both';
+  var firebaseConfig = {
+    apiKey: "AIzaSyBsXvS9t9Bty3xWspN4j7ZBf2frBV6rpas",
+    authDomain: "milodanipoo.firebaseapp.com",
+    projectId: "milodanipoo",
+    storageBucket: "milodanipoo.firebasestorage.app",
+    messagingSenderId: "221439871285",
+    appId: "1:221439871285:web:d4434014111bfd4dc0a47c"
+  };
+  var PLANNER_ID = "milo-and-dani-2026"; // shared "room" — same string on every device syncs together
+
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
+  var docRef = db.collection('planners').doc(PLANNER_ID);
+  var applyingRemote = false;
 
   function loadState() {
     try {
@@ -392,7 +400,39 @@
   }
   function saveState() {
     try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    if (applyingRemote) return;
+    docRef.set(state).catch(function (e) { console.error('Sync failed', e); });
   }
+
+  var state = loadState();
+  var currentMonth = startOfMonth(new Date());
+  var currentTab = 'calendar';
+  var activeDayKey = null;
+  var editingGoalId = null;
+  var calFilter = 'all';
+  var goalsFilter = 'all';
+  var selectedEventOwner = 'both';
+  var selectedGoalOwner = 'both';
+
+  firebase.auth().signInAnonymously().catch(function (e) { console.error('Auth failed', e); });
+
+  firebase.auth().onAuthStateChanged(function (user) {
+    if (!user) return;
+    docRef.onSnapshot(function (doc) {
+      if (doc.exists) {
+        applyingRemote = true;
+        var merged = Object.assign(JSON.parse(JSON.stringify(defaultState)), doc.data());
+        if (!merged.partners || merged.partners.length !== 2) merged.partners = JSON.parse(JSON.stringify(defaultState.partners));
+        state = merged;
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        applyTheme(); renderCoupleLegend();
+        if (currentTab === 'goals') renderGoals(); else renderCalendar();
+        applyingRemote = false;
+      } else {
+        docRef.set(state);
+      }
+    });
+  });
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function toISODate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
