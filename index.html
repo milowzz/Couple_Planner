@@ -60,6 +60,7 @@
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   button, input { touch-action: manipulation; }
   html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); }
   body {
@@ -68,6 +69,22 @@
     background-size: 18px 18px;
   }
   .app { max-width: 1080px; margin: 0 auto; padding: 24px 24px 64px; }
+  .auth-gate { min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
+  .auth-panel { width: min(440px, 100%); padding: 28px; border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--surface); box-shadow: var(--shadow); }
+  .auth-panel h1 { margin: 0; font-family: var(--font-display); font-size: 34px; line-height: 1.1; }
+  .auth-copy { margin: 8px 0 22px; color: var(--ink-soft); font-size: 14px; }
+  .auth-google-btn, .auth-submit { width: 100%; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface-raised); color: var(--ink); font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; }
+  .auth-submit { margin-top: 16px; border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+  .auth-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--ink-soft); font-size: 12px; }
+  .auth-divider::before, .auth-divider::after { content: ''; height: 1px; flex: 1; background: var(--line); }
+  .auth-field { display: block; margin-top: 14px; color: var(--ink-soft); font-size: 13px; font-weight: 600; }
+  .auth-field input { display: block; width: 100%; min-height: 46px; margin-top: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface-raised); color: var(--ink); font: 16px var(--font-body); }
+  .auth-links { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; margin-top: 12px; }
+  .auth-link { padding: 4px 0; border: 0; background: transparent; color: var(--ink-soft); font: 13px var(--font-body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .auth-message { min-height: 20px; margin: 16px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
+  .auth-message[data-error="true"] { color: var(--error); }
+  .auth-verify { margin-top: 16px; }
+  .sync-status { max-width: 260px; color: var(--ink-soft); font-size: 12px; }
   .skip-link { position: fixed; top: 8px; left: 8px; z-index: 60; padding: 10px 14px; background: var(--surface-raised); color: var(--ink); border: 2px solid var(--accent); border-radius: var(--radius-control); transform: translateY(-150%); }
   .skip-link:focus { transform: translateY(0); }
   header.top {
@@ -215,11 +232,44 @@
     .cal-nav { padding: 13px 12px; }
     .cal-nav .month-label { font-size: 18px; }
     .cal-nav-btns { gap: 5px; }
+    .auth-panel { padding: 22px 18px; }
+    .sync-status { order: 3; width: 100%; max-width: none; }
   }
 </style>
 </head>
 <body>
-<main class="app" id="mainContent" tabindex="-1">
+<section class="auth-gate" id="authGate" aria-labelledby="authHeading">
+  <div class="auth-panel">
+    <h1 id="authHeading">Our Planner</h1>
+    <p class="auth-copy">Sign in to open the shared planner.</p>
+    <button class="auth-google-btn" id="googleSignInBtn" type="button">Continue with Google</button>
+    <div class="auth-divider"><span>or use email</span></div>
+    <form id="emailAuthForm" novalidate>
+      <label class="auth-field" for="authEmail">Email
+        <input id="authEmail" name="email" type="email" autocomplete="username" required>
+      </label>
+      <label class="auth-field" for="authPassword">Password
+        <input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="6" required>
+      </label>
+      <label class="auth-field" id="confirmPasswordField" for="authConfirmPassword" hidden>Confirm password
+        <input id="authConfirmPassword" name="confirm-password" type="password" autocomplete="new-password" minlength="6">
+      </label>
+      <button class="auth-submit" id="emailSubmitBtn" type="submit">Sign in</button>
+    </form>
+    <div class="auth-links" id="authLinks">
+      <button class="auth-link" id="authModeBtn" type="button">Create an account</button>
+      <button class="auth-link" id="resetPasswordBtn" type="button">Reset password</button>
+    </div>
+    <div class="auth-verify" id="verifyActions" hidden>
+      <button class="auth-google-btn" id="resendVerificationBtn" type="button">Resend verification email</button>
+      <button class="auth-link" id="confirmVerificationBtn" type="button">I verified my email</button>
+      <button class="auth-link" id="verifySignOutBtn" type="button">Sign out</button>
+    </div>
+    <p class="auth-message" id="authMessage" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+<main class="app" id="mainContent" tabindex="-1" hidden>
   <a class="skip-link" href="#mainContent">Skip to planner</a>
 
   <header class="top">
@@ -234,6 +284,8 @@
       </div>
       <button class="icon-btn" id="exportBtn" title="Export to Calendar" aria-label="Export to Calendar">&#8681;</button>
       <button class="icon-btn" id="settingsBtn" title="Personalize" aria-label="Personalize">&#9881;</button>
+      <span class="sync-status" id="syncStatus" role="status" aria-live="polite"></span>
+      <button class="ghost-btn" id="signOutBtn" type="button">Sign out</button>
     </div>
   </header>
 
@@ -387,6 +439,33 @@
   var db = firebase.firestore();
   var docRef = db.collection('planners').doc(PLANNER_ID);
   var applyingRemote = false;
+  var cloudReady = false;
+  var stopFirestoreListener = null;
+  var pendingCloudWrite = null;
+  var currentAuthUser = null;
+
+  function setSyncStatus(message) {
+    document.getElementById('syncStatus').textContent = message;
+  }
+
+  function stopCloudSync() {
+    cloudReady = false;
+    if (stopFirestoreListener) { stopFirestoreListener(); stopFirestoreListener = null; }
+    if (pendingCloudWrite) { window.clearTimeout(pendingCloudWrite); pendingCloudWrite = null; }
+  }
+
+  function queueCloudWrite() {
+    if (!cloudReady || !currentAuthUser || applyingRemote) return;
+    if (pendingCloudWrite) window.clearTimeout(pendingCloudWrite);
+    pendingCloudWrite = window.setTimeout(function () {
+      pendingCloudWrite = null;
+      docRef.set(state).catch(function (error) {
+        cloudReady = false;
+        setSyncStatus('Cloud sync is unavailable. Changes remain saved in this browser.');
+        console.error('Sync failed', error);
+      });
+    }, 350);
+  }
 
   function loadState() {
     try {
@@ -400,8 +479,7 @@
   }
   function saveState() {
     try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
-    if (applyingRemote) return;
-    docRef.set(state).catch(function (e) { console.error('Sync failed', e); });
+    queueCloudWrite();
   }
 
   var state = loadState();
@@ -413,26 +491,181 @@
   var goalsFilter = 'all';
   var selectedEventOwner = 'both';
   var selectedGoalOwner = 'both';
+  var auth = firebase.auth();
+  var authGate = document.getElementById('authGate');
+  var mainContent = document.getElementById('mainContent');
+  var authMessage = document.getElementById('authMessage');
+  var authEmail = document.getElementById('authEmail');
+  var authPassword = document.getElementById('authPassword');
+  var authConfirmPassword = document.getElementById('authConfirmPassword');
+  var confirmPasswordField = document.getElementById('confirmPasswordField');
+  var emailAuthForm = document.getElementById('emailAuthForm');
+  var authModeBtn = document.getElementById('authModeBtn');
+  var resetPasswordBtn = document.getElementById('resetPasswordBtn');
+  var googleSignInBtn = document.getElementById('googleSignInBtn');
+  var emailSubmitBtn = document.getElementById('emailSubmitBtn');
+  var authLinks = document.getElementById('authLinks');
+  var verifyActions = document.getElementById('verifyActions');
+  var emailAuthMode = 'signin';
 
-  firebase.auth().signInAnonymously().catch(function (e) { console.error('Auth failed', e); });
+  function setAuthMessage(message, isError) {
+    authMessage.textContent = message;
+    authMessage.dataset.error = isError ? 'true' : 'false';
+  }
 
-  firebase.auth().onAuthStateChanged(function (user) {
-    if (!user) return;
-    docRef.onSnapshot(function (doc) {
+  function authErrorMessage(error) {
+    var messages = {
+      'auth/invalid-credential': 'That email and password combination was not recognized.',
+      'auth/user-not-found': 'No account was found for that email.',
+      'auth/wrong-password': 'That email and password combination was not recognized.',
+      'auth/email-already-in-use': 'An account already uses that email. Sign in instead.',
+      'auth/weak-password': 'Choose a password with at least 6 characters.',
+      'auth/invalid-email': 'Enter a valid email address.',
+      'auth/too-many-requests': 'Too many attempts. Wait a little, then try again.',
+      'auth/unauthorized-domain': 'This site is not authorized for Firebase sign-in yet. Add its domain in Firebase Authentication settings.',
+      'auth/popup-blocked': 'The sign-in popup was blocked. Allow popups for this site and try again.',
+      'auth/popup-closed-by-user': 'The sign-in window was closed before finishing.'
+    };
+    return messages[error.code] || 'Sign-in could not be completed. Check your connection and try again.';
+  }
+
+  function setEmailAuthMode(mode) {
+    emailAuthMode = mode;
+    var creating = mode === 'create';
+    confirmPasswordField.hidden = !creating;
+    authConfirmPassword.required = creating;
+    authConfirmPassword.value = '';
+    authPassword.autocomplete = creating ? 'new-password' : 'current-password';
+    emailSubmitBtn.textContent = creating ? 'Create account' : 'Sign in';
+    authModeBtn.textContent = creating ? 'Already have an account? Sign in' : 'Create an account';
+    resetPasswordBtn.hidden = creating;
+    setAuthMessage(creating ? 'A verification email will be sent before this account can open the planner.' : '', false);
+  }
+
+  function showSignInGate() {
+    authGate.hidden = false;
+    mainContent.hidden = true;
+    googleSignInBtn.hidden = false;
+    emailAuthForm.hidden = false;
+    authLinks.hidden = false;
+    verifyActions.hidden = true;
+    setEmailAuthMode('signin');
+  }
+
+  function showVerificationGate(user) {
+    authGate.hidden = false;
+    mainContent.hidden = true;
+    googleSignInBtn.hidden = true;
+    emailAuthForm.hidden = true;
+    authLinks.hidden = true;
+    verifyActions.hidden = false;
+    setAuthMessage('Verify ' + user.email + ' from the email we sent, then choose “I verified my email”.', false);
+  }
+
+  function startCloudSync(user) {
+    stopCloudSync();
+    setSyncStatus('Connecting to shared planner…');
+    stopFirestoreListener = docRef.onSnapshot(function (doc) {
       if (doc.exists) {
         applyingRemote = true;
-        var merged = Object.assign(JSON.parse(JSON.stringify(defaultState)), doc.data());
-        if (!merged.partners || merged.partners.length !== 2) merged.partners = JSON.parse(JSON.stringify(defaultState.partners));
-        state = merged;
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        applyTheme(); renderCoupleLegend();
-        if (currentTab === 'goals') renderGoals(); else renderCalendar();
-        applyingRemote = false;
+        try {
+          var merged = Object.assign(JSON.parse(JSON.stringify(defaultState)), doc.data());
+          if (!merged.partners || merged.partners.length !== 2) merged.partners = JSON.parse(JSON.stringify(defaultState.partners));
+          state = merged;
+          try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+          applyTheme(); renderCoupleLegend();
+          if (currentTab === 'goals') renderGoals(); else renderCalendar();
+          cloudReady = true;
+          setSyncStatus('Shared planner synced');
+        } finally { applyingRemote = false; }
       } else {
-        docRef.set(state);
+        docRef.set(state).then(function () {
+          cloudReady = true;
+          setSyncStatus('Shared planner synced');
+        }).catch(function (error) {
+          cloudReady = false;
+          setSyncStatus('Signed in, but this account cannot access Firestore. Check the planner UID rules.');
+          console.error('Initial sync failed', error);
+        });
       }
+    }, function (error) {
+      cloudReady = false;
+      setSyncStatus('Signed in, but this account cannot access Firestore. Check the planner UID rules.');
+      console.error('Sync listener failed', error);
     });
+  }
+
+  function handleAuthState(user) {
+    currentAuthUser = user;
+    stopCloudSync();
+    if (!user) { showSignInGate(); return; }
+    if (user.isAnonymous) {
+      auth.signOut().catch(function (error) { setAuthMessage(authErrorMessage(error), true); });
+      return;
+    }
+    var passwordProvider = user.providerData.some(function (provider) { return provider.providerId === 'password'; });
+    if (passwordProvider && !user.emailVerified) { showVerificationGate(user); return; }
+    authGate.hidden = true;
+    mainContent.hidden = false;
+    startCloudSync(user);
+  }
+
+  authModeBtn.addEventListener('click', function () {
+    setEmailAuthMode(emailAuthMode === 'signin' ? 'create' : 'signin');
+    authPassword.focus();
   });
+  emailAuthForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var email = authEmail.value.trim();
+    var password = authPassword.value;
+    if (emailAuthMode === 'create' && password !== authConfirmPassword.value) {
+      setAuthMessage('The passwords do not match.', true); authConfirmPassword.focus(); return;
+    }
+    setAuthMessage(emailAuthMode === 'create' ? 'Creating your account…' : 'Signing in…', false);
+    if (emailAuthMode === 'create') {
+      auth.createUserWithEmailAndPassword(email, password).then(function (credential) {
+        return credential.user.sendEmailVerification().then(function () {
+          showVerificationGate(credential.user);
+        });
+      }).catch(function (error) { setAuthMessage(authErrorMessage(error), true); });
+    } else {
+      auth.signInWithEmailAndPassword(email, password).catch(function (error) { setAuthMessage(authErrorMessage(error), true); });
+    }
+  });
+  googleSignInBtn.addEventListener('click', function () {
+    setAuthMessage('Opening Google sign-in…', false);
+    var provider = new firebase.auth.GoogleAuthProvider();
+    var signIn = window.matchMedia('(max-width: 640px)').matches ? auth.signInWithRedirect(provider) : auth.signInWithPopup(provider);
+    signIn.catch(function (error) { setAuthMessage(authErrorMessage(error), true); });
+  });
+  resetPasswordBtn.addEventListener('click', function () {
+    var email = authEmail.value.trim();
+    if (!email) { setAuthMessage('Enter your email first, then choose Reset password.', true); authEmail.focus(); return; }
+    auth.sendPasswordResetEmail(email).then(function () {
+      setAuthMessage('If an account exists for that email, a reset link has been sent.', false);
+    }).catch(function (error) { setAuthMessage(authErrorMessage(error), true); });
+  });
+  document.getElementById('resendVerificationBtn').addEventListener('click', function () {
+    var user = auth.currentUser;
+    if (!user) return;
+    user.sendEmailVerification().then(function () { setAuthMessage('Verification email sent to ' + user.email + '.', false); })
+      .catch(function (error) { setAuthMessage(authErrorMessage(error), true); });
+  });
+  document.getElementById('confirmVerificationBtn').addEventListener('click', function () {
+    var user = auth.currentUser;
+    if (!user) return;
+    user.reload().then(function () { return user.getIdToken(true); }).then(function () { handleAuthState(auth.currentUser); })
+      .catch(function (error) { setAuthMessage(authErrorMessage(error), true); });
+  });
+  document.getElementById('verifySignOutBtn').addEventListener('click', function () {
+    auth.signOut().catch(function (error) { setAuthMessage(authErrorMessage(error), true); });
+  });
+  document.getElementById('signOutBtn').addEventListener('click', function () {
+    setSyncStatus('Signing out…');
+    auth.signOut().catch(function (error) { setSyncStatus(authErrorMessage(error)); });
+  });
+  auth.getRedirectResult().catch(function (error) { setAuthMessage(authErrorMessage(error), true); });
+  auth.onAuthStateChanged(handleAuthState);
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function toISODate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
