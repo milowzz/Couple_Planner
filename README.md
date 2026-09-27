@@ -15,7 +15,7 @@ A shared calendar and goals planner for two authorized users. The site is a sing
 
 ## Screenshots
 
-Current sign-in screen:
+Calender User interface:
 
 ![Planner sign-in screen](docs/images/planner-screenshot.png)
 
