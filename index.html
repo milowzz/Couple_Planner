@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>2026-2027 Planner &lt;3</title>
+<meta name="theme-color" content="#F1F2EE">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="2026-2027 Planner">
@@ -13,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
+    color-scheme: light;
     --bg: #F1F2EE;
     --surface: #FAFBF8;
     --surface-raised: #FFFFFF;
@@ -22,6 +24,7 @@
     --line-soft: rgba(36,39,32,0.07);
     --accent: #C9A227;
     --accent-ink: #2B2118;
+    --error: #A12D23;
     --shadow: 0 8px 24px rgba(28,31,27,0.07);
     --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
     --font-body: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -36,6 +39,7 @@
       color-scheme: dark;
       --bg: #111315; --surface: #191C1F; --surface-raised: #22262A;
       --ink: #F1F0EA; --ink-soft: #B7B7AF;
+      --error: #FF8A80;
       --line: rgba(241,240,234,0.14); --line-soft: rgba(241,240,234,0.08);
       --shadow: 0 8px 24px rgba(0,0,0,0.28); --texture-opacity: 0.04;
     }
@@ -44,11 +48,13 @@
     color-scheme: dark;
     --bg: #111315; --surface: #191C1F; --surface-raised: #22262A;
     --ink: #F1F0EA; --ink-soft: #B7B7AF;
+    --error: #FF8A80;
     --line: rgba(241,240,234,0.14); --line-soft: rgba(241,240,234,0.08);
     --shadow: 0 8px 24px rgba(0,0,0,0.28); --texture-opacity: 0.04;
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   * { box-sizing: border-box; }
+  button, input { touch-action: manipulation; }
   html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); }
   body {
     position: relative; min-height: 100%;
@@ -56,17 +62,20 @@
     background-size: 18px 18px;
   }
   .app { max-width: 1080px; margin: 0 auto; padding: 24px 24px 64px; }
+  .skip-link { position: fixed; top: 8px; left: 8px; z-index: 60; padding: 10px 14px; background: var(--surface-raised); color: var(--ink); border: 2px solid var(--accent); border-radius: var(--radius-control); transform: translateY(-150%); }
+  .skip-link:focus { transform: translateY(0); }
   header.top {
     display: flex; align-items: flex-start; justify-content: space-between;
     gap: 12px; padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
     margin-bottom: 24px; flex-wrap: wrap;
   }
   .title-wrap { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .title-wrap h1 { margin: 0; }
   .title-input {
     font-family: var(--font-display); font-size: 34px; font-weight: 600; line-height: 1.05;
     background: transparent; border: none; color: var(--ink); padding: 2px 0; max-width: 60vw;
   }
-  .title-input:focus { outline: none; border-bottom: 2px solid var(--accent); }
+  .title-input:focus { border-bottom: 2px solid var(--accent); }
   .couple-legend { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
   .legend-item { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-soft); }
   .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
@@ -74,9 +83,11 @@
   .tabbar { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; }
   .tab { border: none; background: transparent; color: var(--ink-soft); font-family: var(--font-body); font-weight: 600; font-size: 14px; padding: 8px 16px; border-radius: 7px; cursor: pointer; }
   .tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
-  .icon-btn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease; }
+  .icon-btn { width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease; }
   .icon-btn:hover { border-color: var(--accent); }
-  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:focus-visible, input:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button, .filter-pill, .tab, .radio-pill, .owner-pill, .ghost-btn, .btn-primary, .btn-text { min-height: 44px; }
+  button:active { transform: scale(0.98); }
 
   .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .filter-pill {
@@ -93,15 +104,15 @@
   .cal-nav-btns { display: flex; gap: 8px; align-items: center; }
   .ghost-btn { border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink); border-radius: var(--radius-control); padding: 7px 12px; font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; }
   .ghost-btn:hover { border-color: var(--accent); }
-  .arrow-btn { width: 36px; height: 36px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--surface-raised); cursor: pointer; color: var(--ink); font-size: 17px; }
+  .arrow-btn { width: 44px; height: 44px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--surface-raised); cursor: pointer; color: var(--ink); font-size: 17px; }
   .weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); padding: 10px 8px 0; }
   .weekday-row span { text-align: center; color: var(--ink-soft); font-size: 11px; font-weight: 600; }
   .day-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; padding: 8px; }
-  .day-cell { min-height: 88px; border-radius: var(--radius-control); border: 1px solid var(--line-soft); padding: 7px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; background: var(--surface-raised); transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease; }
+  .day-cell { min-height: 88px; border-radius: var(--radius-control); border: 1px solid var(--line-soft); padding: 7px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; background: var(--surface-raised); color: var(--ink); font: inherit; text-align: left; transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease; }
   .day-cell.outside { opacity: 0.35; }
   .day-cell:hover { border-color: var(--accent); transform: translateY(-1px); }
   .day-cell.today { border-color: var(--accent); border-width: 1.5px; }
-  .day-num { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .day-num { font-size: 13px; font-weight: 600; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
   .day-cell.today .day-num { color: var(--ink); font-weight: 700; }
   .chip { font-size: 11px; padding: 2px 6px; border-radius: 6px; color: #FBF6EA; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .chip-more { font-size: 10.5px; color: var(--ink-soft); padding-left: 4px; }
@@ -114,48 +125,49 @@
   .month-ticks { position: relative; height: 26px; border-bottom: 1px solid var(--line); margin-left: 160px; }
   .month-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line-soft); padding-left: 6px; font-size: 11.5px; color: var(--ink-soft); white-space: nowrap; }
   .goal-row { display: flex; align-items: center; min-height: 46px; border-bottom: 1px solid var(--line-soft); }
-  .goal-label { width: 160px; flex: none; padding-right: 10px; font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .goal-label { width: 160px; flex: none; padding: 0 10px 0 0; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px; text-align: left; }
   .goal-label .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
   .goal-track { position: relative; flex: 1; height: 100%; }
-  .goal-bar { position: absolute; top: 10px; height: 26px; border-radius: 8px; cursor: pointer; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  .goal-bar { position: absolute; top: 10px; height: 26px; border-radius: var(--radius-control); overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
   .goal-bar .fill { position: absolute; top: 0; bottom: 0; left: 0; background: rgba(255,255,255,0.35); }
-  .goal-bar .pct { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 10.5px; color: #FBF6EA; font-weight: 700; }
+  .goal-bar .pct { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 10.5px; color: #FBF6EA; font-weight: 700; font-variant-numeric: tabular-nums; }
   .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); z-index: 2; opacity: 0.6; }
   .empty-note { padding: 30px 10px; text-align: center; color: var(--ink-soft); font-size: 14px; }
 
   .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.28); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 40; }
   .backdrop.open { opacity: 1; pointer-events: auto; }
-  .panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(360px, 88vw); background: var(--surface); border-left: 1px solid var(--line); box-shadow: -12px 0 30px rgba(0,0,0,0.18); transform: translateX(100%); transition: transform 0.25s ease; z-index: 41; padding: calc(env(safe-area-inset-top,0px) + 20px) 20px 20px; overflow-y: auto; }
+  .panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(360px, 88vw); background: var(--surface); border-left: 1px solid var(--line); box-shadow: -12px 0 30px rgba(0,0,0,0.18); transform: translateX(100%); transition: transform 0.25s ease; z-index: 41; padding: calc(env(safe-area-inset-top,0px) + 20px) 20px 20px; overflow-y: auto; overscroll-behavior: contain; }
   .panel.open { transform: translateX(0); }
-  .panel h3 { font-family: var(--font-display); font-size: 18px; margin: 0 0 4px; }
+  .panel h2 { font-family: var(--font-display); font-size: 18px; margin: 0 0 4px; }
   .panel .panel-sub { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 18px; }
   .field-group { margin-bottom: 22px; }
   .field-group > label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 8px; }
   .partner-block { border: 1px solid var(--line); border-radius: var(--radius-panel); padding: 12px; margin-bottom: 12px; }
-  .partner-block input[type="text"] { width: 100%; padding: 8px 9px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink); font-family: var(--font-body); font-size: 14px; margin-bottom: 10px; }
-  .partner-block input[type="text"]:focus { outline: none; border-color: var(--accent); }
+  .partner-block input[type="text"] { width: 100%; padding: 8px 9px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink); font-family: var(--font-body); font-size: 16px; margin-bottom: 10px; }
+  .partner-block input[type="text"]:focus { border-color: var(--accent); }
   .swatches { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+  .swatch { width: 44px; height: 44px; padding: 7px; background-clip: content-box; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
   .swatch.selected { border-color: var(--ink); }
-  .color-input { width: 26px; height: 26px; border-radius: 50%; border: none; padding: 0; cursor: pointer; background: none; }
+  .color-input { width: 44px; height: 44px; border-radius: 50%; border: none; padding: 0; cursor: pointer; background: none; }
   .radio-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .radio-pill { border: 1px solid var(--line); background: var(--surface-raised); padding: 7px 12px; border-radius: 999px; font-size: 12.5px; cursor: pointer; color: var(--ink); }
   .radio-pill.selected { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .toggle-row { display: flex; align-items: center; justify-content: space-between; }
-  .switch { width: 42px; height: 24px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; flex: none; }
-  .switch .knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: var(--surface-raised); border-radius: 50%; transition: left 0.15s ease; }
-  .switch.on { background: var(--accent); }
-  .switch.on .knob { left: 20px; }
+  .switch { width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; position: relative; cursor: pointer; flex: none; }
+  .switch::before { content: ''; position: absolute; width: 42px; height: 24px; top: 10px; left: 1px; border-radius: 999px; background: var(--line); }
+  .switch .knob { position: absolute; top: 12px; left: 3px; width: 20px; height: 20px; background: var(--surface-raised); border-radius: 50%; transition: transform 0.15s ease; }
+  .switch.on::before { background: var(--accent); }
+  .switch.on .knob { transform: translateX(20px); }
   .close-panel { position: absolute; top: 16px; right: 16px; }
 
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; overscroll-behavior: contain; }
   .modal-backdrop.open { display: flex; }
   .modal { background: var(--surface); border-radius: var(--radius-panel); width: min(430px, 100%); max-height: 88vh; overflow-y: auto; padding: 22px; box-shadow: var(--shadow); border: 1px solid var(--line); }
-  .modal h3 { font-family: var(--font-display); margin: 0 0 4px; font-size: 19px; }
+  .modal h2 { font-family: var(--font-display); margin: 0 0 4px; font-size: 19px; }
   .modal .modal-sub { color: var(--ink-soft); font-size: 13px; margin-bottom: 16px; }
   .modal label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin: 14px 0 6px; }
-  .modal input[type="text"], .modal input[type="date"], .modal input[type="time"] { width: 100%; padding: 9px 10px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink); font-family: var(--font-body); font-size: 14px; }
-  .modal input:focus { outline: none; border-color: var(--accent); }
+  .modal input[type="text"], .modal input[type="date"], .modal input[type="time"] { width: 100%; min-height: 44px; padding: 9px 10px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink); font-family: var(--font-body); font-size: 16px; }
+  .modal input:focus { border-color: var(--accent); }
   .date-row { display: flex; gap: 10px; }
   .date-row > div { flex: 1; }
   .modal input[type="range"] { width: 100%; accent-color: var(--accent); }
@@ -168,11 +180,11 @@
   .existing-item { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
   .existing-item .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
   .existing-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .existing-item button { border: none; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 15px; padding: 2px 4px; }
+  .existing-item button { width: 44px; min-width: 44px; border: none; border-radius: var(--radius-control); background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 18px; padding: 2px 4px; }
   .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 10px; }
   .btn-primary { background: var(--accent); color: var(--accent-ink); border: none; border-radius: 10px; padding: 10px 18px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: var(--font-body); }
-  .btn-text { background: transparent; border: none; color: var(--ink-soft); cursor: pointer; font-size: 13px; font-family: var(--font-body); }
-  .err-msg { color: #A8412F; font-size: 12.5px; min-height: 16px; margin-top: 6px; }
+  .btn-text { background: transparent; border: none; color: var(--ink-soft); cursor: pointer; font-size: 13px; font-family: var(--font-body); padding: 10px 8px; }
+  .err-msg { color: var(--error); font-size: 12.5px; min-height: 16px; margin-top: 6px; }
 
   @keyframes settle-in {
     from { opacity: 0; transform: translateY(8px); }
@@ -200,28 +212,29 @@
 </style>
 </head>
 <body>
-<div class="app">
+<main class="app" id="mainContent" tabindex="-1">
+  <a class="skip-link" href="#mainContent">Skip to planner</a>
 
   <header class="top">
     <div class="title-wrap">
-      <input class="title-input" id="titleInput" maxlength="40" spellcheck="false">
+      <h1><input class="title-input" id="titleInput" name="planner-title" aria-label="Planner name" autocomplete="off" maxlength="40" spellcheck="false"></h1>
       <div class="couple-legend" id="coupleLegend"></div>
     </div>
     <div class="top-actions">
-      <div class="tabbar" role="tablist">
-        <button class="tab" id="tabCalendarBtn" role="tab" aria-selected="true">Calendar</button>
-        <button class="tab" id="tabGoalsBtn" role="tab" aria-selected="false">Goals</button>
+      <div class="tabbar" role="tablist" aria-label="Planner views">
+        <button class="tab" id="tabCalendarBtn" role="tab" aria-selected="true" aria-controls="calendarView">Calendar</button>
+        <button class="tab" id="tabGoalsBtn" role="tab" aria-selected="false" aria-controls="goalsView">Goals</button>
       </div>
       <button class="icon-btn" id="exportBtn" title="Export to Calendar" aria-label="Export to Calendar">&#8681;</button>
       <button class="icon-btn" id="settingsBtn" title="Personalize" aria-label="Personalize">&#9881;</button>
     </div>
   </header>
 
-  <section id="calendarView">
+  <section id="calendarView" role="tabpanel" aria-labelledby="tabCalendarBtn" tabindex="0">
     <div class="filter-row" id="calFilterRow"></div>
     <div class="card">
       <div class="cal-nav">
-        <div class="month-label" id="monthLabel"></div>
+        <div class="month-label" id="monthLabel" aria-live="polite" aria-atomic="true"></div>
         <div class="cal-nav-btns">
           <button class="ghost-btn" id="todayBtn">Today</button>
           <button class="arrow-btn" id="prevMonthBtn" aria-label="Previous month">&#8249;</button>
@@ -233,7 +246,7 @@
     </div>
   </section>
 
-  <section id="goalsView" style="display:none;">
+  <section id="goalsView" role="tabpanel" aria-labelledby="tabGoalsBtn" tabindex="0" style="display:none;">
     <div class="filter-row" id="goalsFilterRow"></div>
     <div class="card goals-card">
       <div class="goals-header">
@@ -244,12 +257,12 @@
     </div>
   </section>
 
-</div>
+</main>
 
 <div class="backdrop" id="backdrop"></div>
-<div class="panel" id="settingsPanel">
+<div class="panel" id="settingsPanel" role="dialog" aria-modal="true" aria-labelledby="settingsHeading" tabindex="-1" inert aria-hidden="true">
   <button class="icon-btn close-panel" id="closePanelBtn" aria-label="Close">&times;</button>
-  <h3>Personalize</h3>
+  <h2 id="settingsHeading">Personalize</h2>
   <div class="panel-sub">This planner remembers changes on this device and browser.</div>
 
   <div class="field-group">
@@ -266,38 +279,38 @@
   <div class="field-group">
     <label>Appearance</label>
     <div class="radio-row" id="themeRadios">
-      <button class="radio-pill" data-theme="system">System</button>
-      <button class="radio-pill" data-theme="light">Light</button>
-      <button class="radio-pill" data-theme="dark">Dark</button>
+      <button class="radio-pill" data-theme="system" aria-pressed="false">System</button>
+      <button class="radio-pill" data-theme="light" aria-pressed="false">Light</button>
+      <button class="radio-pill" data-theme="dark" aria-pressed="false">Dark</button>
     </div>
   </div>
 
   <div class="field-group">
     <label>Heading style</label>
     <div class="radio-row" id="fontRadios">
-      <button class="radio-pill" data-font="serif">Storybook serif</button>
-      <button class="radio-pill" data-font="sans">Clean sans</button>
+      <button class="radio-pill" data-font="serif" aria-pressed="false">Storybook serif</button>
+      <button class="radio-pill" data-font="sans" aria-pressed="false">Clean sans</button>
     </div>
   </div>
 
   <div class="field-group">
-    <div class="toggle-row"><label style="margin:0;">Paper grain</label><div class="switch" id="textureSwitch"><div class="knob"></div></div></div>
+    <div class="toggle-row"><label for="textureSwitch" style="margin:0;">Paper grain</label><button class="switch" id="textureSwitch" type="button" role="switch" aria-label="Paper grain" aria-checked="false"><span class="knob"></span></button></div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="dayModalBackdrop">
-  <div class="modal">
-    <h3 id="dayModalTitle">Day</h3>
+<div class="modal-backdrop" id="dayModalBackdrop" inert aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dayModalTitle" tabindex="-1">
+    <h2 id="dayModalTitle">Day</h2>
     <div class="modal-sub">Add what's happening.</div>
     <div class="existing-list" id="dayExistingList"></div>
-    <label>Title</label>
-    <input type="text" id="eventTitleInput" placeholder="e.g. Dinner reservation, date night">
+    <label for="eventTitleInput">Title</label>
+    <input type="text" id="eventTitleInput" name="event-title" autocomplete="off" aria-describedby="eventErr" placeholder="e.g. Dinner reservation, date night…">
     <div class="date-row">
-      <div><label>Time (optional)</label><input type="time" id="eventTimeInput"></div>
+      <div><label for="eventTimeInput">Time (optional)</label><input type="time" id="eventTimeInput" name="event-time"></div>
     </div>
-    <label>Whose plan is this?</label>
-    <div class="owner-picker" id="eventOwnerPicker"></div>
-    <div class="err-msg" id="eventErr"></div>
+    <label id="eventOwnerLabel">Whose plan is this?</label>
+    <div class="owner-picker" id="eventOwnerPicker" role="group" aria-labelledby="eventOwnerLabel"></div>
+    <div class="err-msg" id="eventErr" role="alert" aria-live="assertive"></div>
     <div class="modal-actions">
       <button class="btn-text" id="dayModalCloseBtn">Close</button>
       <button class="btn-primary" id="addEventBtn">Add to day</button>
@@ -305,21 +318,21 @@
   </div>
 </div>
 
-<div class="modal-backdrop" id="goalModalBackdrop">
-  <div class="modal">
-    <h3 id="goalModalTitle">New goal</h3>
+<div class="modal-backdrop" id="goalModalBackdrop" inert aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="goalModalTitle" tabindex="-1">
+    <h2 id="goalModalTitle">New goal</h2>
     <div class="modal-sub">Give it a timeframe and watch the bar fill in.</div>
-    <label>Goal name</label>
-    <input type="text" id="goalNameInput" placeholder="e.g. Save for the trip, run a 10k together">
+    <label for="goalNameInput">Goal name</label>
+    <input type="text" id="goalNameInput" name="goal-name" autocomplete="off" aria-describedby="goalErr" placeholder="e.g. Save for the trip, run a 10k together…">
     <div class="date-row">
-      <div><label>Start</label><input type="date" id="goalStartInput"></div>
-      <div><label>Target date</label><input type="date" id="goalEndInput"></div>
+      <div><label for="goalStartInput">Start</label><input type="date" id="goalStartInput" name="goal-start"></div>
+      <div><label for="goalEndInput">Target date</label><input type="date" id="goalEndInput" name="goal-end"></div>
     </div>
-    <label>Whose goal is this?</label>
-    <div class="owner-picker" id="goalOwnerPicker"></div>
-    <label>Progress <span class="range-val" id="goalProgressVal">0%</span></label>
+    <label id="goalOwnerLabel">Whose goal is this?</label>
+    <div class="owner-picker" id="goalOwnerPicker" role="group" aria-labelledby="goalOwnerLabel"></div>
+    <label for="goalProgressInput">Progress <span class="range-val" id="goalProgressVal">0%</span></label>
     <input type="range" id="goalProgressInput" min="0" max="100" value="0">
-    <div class="err-msg" id="goalErr"></div>
+    <div class="err-msg" id="goalErr" role="alert" aria-live="assertive"></div>
     <div class="modal-actions">
       <button class="btn-text" id="deleteGoalBtn" style="display:none;">Delete goal</button>
       <span style="flex:1;"></span>
@@ -397,12 +410,51 @@
     return 'Both of you';
   }
 
+  function colorLuminance(hex) {
+    var match = /^#?([0-9a-f]{6})$/i.exec(hex);
+    if (!match) return 0.5;
+    var channels = match[1].match(/.{2}/g).map(function (value) { return parseInt(value, 16) / 255; });
+    var rgb = channels.map(function (value) { return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4); });
+    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  }
+  function contrastRatio(foreground, background) {
+    var a = colorLuminance(foreground), b = colorLuminance(background);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  }
+  function readableTextColor(backgrounds) {
+    var colors = Array.isArray(backgrounds) ? backgrounds : [backgrounds];
+    var dark = colorLuminance('#242720'), light = colorLuminance('#F7F6F0');
+    function minContrast(foreground) { return Math.min.apply(null, colors.map(function (color) { return contrastRatio(foreground === dark ? '#242720' : '#F7F6F0', color); })); }
+    return minContrast(dark) >= minContrast(light) ? '#242720' : '#F7F6F0';
+  }
+  function contrastSafeColor(background, foreground) {
+    if (contrastRatio(foreground, background) >= 4.5) return background;
+    var match = /^#?([0-9a-f]{6})$/i.exec(background);
+    if (!match) return background;
+    var channels = match[1].match(/.{2}/g).map(function (value) { return parseInt(value, 16); });
+    var target = foreground === '#242720' ? 255 : 0;
+    for (var step = 1; step <= 100; step++) {
+      var candidate = '#' + channels.map(function (value) { return Math.round(value + (target - value) * step / 100).toString(16).padStart(2, '0'); }).join('');
+      if (contrastRatio(foreground, candidate) >= 4.5) return candidate;
+    }
+    return background;
+  }
+  function ownerPresentation(owner) {
+    var colors = owner === 'both' ? [state.partners[0].color, state.partners[1].color] : [owner === 'p1' ? state.partners[0].color : state.partners[1].color];
+    var text = readableTextColor(colors);
+    var safe = colors.map(function (color) { return contrastSafeColor(color, text); });
+    return { background: safe.length === 1 ? safe[0] : 'linear-gradient(90deg, ' + safe[0] + ' 50%, ' + safe[1] + ' 50%)', color: text };
+  }
+
   function applyTheme() {
-    document.documentElement.style.setProperty('--accent', state.accent);
+    var accentText = readableTextColor(state.accent);
+    document.documentElement.style.setProperty('--accent', contrastSafeColor(state.accent, accentText));
+    document.documentElement.style.setProperty('--accent-ink', accentText);
     if (state.theme === 'system') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', state.theme);
     document.documentElement.style.setProperty('--font-display', state.font === 'serif' ? "'Cormorant Garamond', Georgia, 'Times New Roman', serif" : "'Outfit', 'Work Sans', sans-serif");
     document.documentElement.style.setProperty('--texture-opacity', state.texture ? '0.06' : '0');
+    document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   }
 
   function renderAccentPicker(container, selectedValue, onPick) {
@@ -411,14 +463,14 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'swatch' + (a.value.toLowerCase() === selectedValue.toLowerCase() ? ' selected' : '');
-      b.style.background = a.value; b.title = a.name; b.setAttribute('aria-label', a.name);
+      b.style.background = a.value; b.title = a.name; b.setAttribute('aria-label', a.name); b.setAttribute('aria-pressed', String(a.value.toLowerCase() === selectedValue.toLowerCase()));
       b.addEventListener('click', function () { onPick(a.value); });
       container.appendChild(b);
     });
     var customWrap = document.createElement('label');
     customWrap.style.cursor = 'pointer';
     var custom = document.createElement('input');
-    custom.type = 'color'; custom.className = 'color-input'; custom.value = selectedValue;
+    custom.type = 'color'; custom.className = 'color-input'; custom.value = selectedValue; custom.setAttribute('aria-label', 'Custom color');
     custom.addEventListener('input', function () { onPick(custom.value); });
     customWrap.appendChild(custom);
     container.appendChild(customWrap);
@@ -435,8 +487,10 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'owner-pill' + (o.key === selected ? ' selected' : '');
+      btn.setAttribute('aria-pressed', String(o.key === selected));
       var dot = document.createElement('span'); dot.className = 'dot';
       dot.style.background = o.color ? o.color : ownerColor('both');
+      dot.setAttribute('aria-hidden', 'true');
       btn.appendChild(dot);
       var txt = document.createElement('span'); txt.textContent = o.label;
       btn.appendChild(txt);
@@ -471,8 +525,10 @@
       var pill = document.createElement('button');
       pill.type = 'button';
       pill.className = 'filter-pill' + (o.key === current ? ' selected' : '');
+      pill.setAttribute('aria-pressed', String(o.key === current));
       if (o.color) {
         var dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = o.color;
+        dot.setAttribute('aria-hidden', 'true');
         pill.appendChild(dot);
       }
       var txt = document.createElement('span'); txt.textContent = o.label;
@@ -485,17 +541,60 @@
   // ---------- Settings panel ----------
   var settingsPanel = document.getElementById('settingsPanel');
   var backdrop = document.getElementById('backdrop');
-  document.getElementById('settingsBtn').addEventListener('click', function () {
-    renderSettingsPanel(); settingsPanel.classList.add('open'); backdrop.classList.add('open');
+  var activeOverlay = null;
+  var overlayReturnFocus = null;
+  function openOverlay(overlay, focusTarget) {
+    overlayReturnFocus = document.activeElement;
+    activeOverlay = overlay;
+    document.getElementById('mainContent').inert = true;
+    overlay.inert = false; overlay.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('open'); backdrop.classList.add('open');
+    var initialFocus = focusTarget;
+    if (window.matchMedia('(max-width: 640px)').matches && overlay !== settingsPanel) initialFocus = overlay.querySelector('[role="dialog"]');
+    if (initialFocus) initialFocus.focus();
+  }
+  function closeOverlay(overlay) {
+    overlay.classList.remove('open');
+    overlay.inert = true; overlay.setAttribute('aria-hidden', 'true');
+    if (activeOverlay !== overlay) return;
+    activeOverlay = null; backdrop.classList.remove('open');
+    document.getElementById('mainContent').inert = false;
+    var target = overlayReturnFocus; overlayReturnFocus = null;
+    if (target && target.isConnected) target.focus();
+  }
+  document.addEventListener('keydown', function (event) {
+    if (!activeOverlay) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      if (activeOverlay === settingsPanel) closeSettings();
+      else if (activeOverlay === dayModalBackdrop) closeDayModal();
+      else closeGoalModal();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    var items = activeOverlay.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+    var focusable = Array.prototype.filter.call(items, function (item) { return item.getClientRects().length > 0; });
+    if (!focusable.length) { event.preventDefault(); activeOverlay.focus(); return; }
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   });
-  function closeSettings() { settingsPanel.classList.remove('open'); backdrop.classList.remove('open'); }
+  document.getElementById('settingsBtn').addEventListener('click', function () {
+    renderSettingsPanel(); openOverlay(settingsPanel, document.getElementById('closePanelBtn'));
+  });
+  function closeSettings() { closeOverlay(settingsPanel); }
   document.getElementById('closePanelBtn').addEventListener('click', closeSettings);
-  backdrop.addEventListener('click', function () { closeSettings(); closeDayModal(); closeGoalModal(); });
+  backdrop.addEventListener('click', function () {
+    if (activeOverlay === settingsPanel) closeSettings();
+    else if (activeOverlay === dayModalBackdrop) closeDayModal();
+    else if (activeOverlay === goalModalBackdrop) closeGoalModal();
+  });
 
   function renderPartnerBlock(container, index) {
     container.innerHTML = '';
     var input = document.createElement('input');
     input.type = 'text'; input.maxLength = 24; input.value = state.partners[index].name;
+    input.name = 'partner-' + (index + 1) + '-name'; input.setAttribute('aria-label', 'Partner ' + (index + 1) + ' name'); input.autocomplete = 'off';
     input.placeholder = 'Partner ' + (index + 1) + ' name';
     input.addEventListener('input', function () {
       state.partners[index].name = input.value || ('Partner ' + (index + 1));
@@ -521,49 +620,85 @@
     var themeRadios = document.getElementById('themeRadios');
     Array.prototype.forEach.call(themeRadios.children, function (btn) {
       btn.classList.toggle('selected', btn.dataset.theme === state.theme);
+      btn.setAttribute('aria-pressed', String(btn.dataset.theme === state.theme));
       btn.onclick = function () { state.theme = btn.dataset.theme; saveState(); applyTheme(); renderSettingsPanel(); };
     });
     var fontRadios = document.getElementById('fontRadios');
     Array.prototype.forEach.call(fontRadios.children, function (btn) {
       btn.classList.toggle('selected', btn.dataset.font === state.font);
+      btn.setAttribute('aria-pressed', String(btn.dataset.font === state.font));
       btn.onclick = function () { state.font = btn.dataset.font; saveState(); applyTheme(); renderSettingsPanel(); };
     });
     var textureSwitch = document.getElementById('textureSwitch');
     textureSwitch.classList.toggle('on', !!state.texture);
-    textureSwitch.onclick = function () { state.texture = !state.texture; saveState(); applyTheme(); textureSwitch.classList.toggle('on', state.texture); };
+    textureSwitch.setAttribute('aria-checked', String(!!state.texture));
+    textureSwitch.onclick = function () { state.texture = !state.texture; saveState(); applyTheme(); textureSwitch.classList.toggle('on', state.texture); textureSwitch.setAttribute('aria-checked', String(state.texture)); };
   }
 
   // ---------- Title ----------
   var titleInput = document.getElementById('titleInput');
   titleInput.value = state.title;
-  titleInput.addEventListener('input', function () { state.title = titleInput.value || 'Our Planner'; saveState(); });
+  document.title = state.title;
+  titleInput.addEventListener('input', function () { state.title = titleInput.value || 'Our Planner'; document.title = state.title; saveState(); });
 
   // ---------- Tabs ----------
   var calendarView = document.getElementById('calendarView');
   var goalsView = document.getElementById('goalsView');
   var tabCalendarBtn = document.getElementById('tabCalendarBtn');
   var tabGoalsBtn = document.getElementById('tabGoalsBtn');
-  function setTab(tab) {
+  function writeUrlState() {
+    var url = new URL(window.location.href);
+    url.searchParams.set('view', currentTab);
+    url.searchParams.set('calendarFilter', calFilter);
+    url.searchParams.set('goalsFilter', goalsFilter);
+    url.searchParams.set('month', currentMonth.getFullYear() + '-' + pad(currentMonth.getMonth() + 1));
+    window.history.pushState({ planner: true }, '', url);
+  }
+  function readUrlState() {
+    var params = new URLSearchParams(window.location.search);
+    currentTab = params.get('view') === 'goals' ? 'goals' : 'calendar';
+    var validFilters = ['all', 'p1', 'p2', 'both'];
+    if (validFilters.indexOf(params.get('calendarFilter')) !== -1) calFilter = params.get('calendarFilter');
+    if (validFilters.indexOf(params.get('goalsFilter')) !== -1) goalsFilter = params.get('goalsFilter');
+    var month = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(params.get('month') || '');
+    if (month) currentMonth = new Date(Number(month[1]), Number(month[2]) - 1, 1);
+  }
+  function setTab(tab, updateHistory) {
     currentTab = tab;
     calendarView.style.display = tab === 'calendar' ? '' : 'none';
     goalsView.style.display = tab === 'goals' ? '' : 'none';
     tabCalendarBtn.setAttribute('aria-selected', tab === 'calendar' ? 'true' : 'false');
     tabGoalsBtn.setAttribute('aria-selected', tab === 'goals' ? 'true' : 'false');
+    tabCalendarBtn.tabIndex = tab === 'calendar' ? 0 : -1;
+    tabGoalsBtn.tabIndex = tab === 'goals' ? 0 : -1;
     if (tab === 'goals') renderGoals(); else renderCalendar();
+    if (updateHistory !== false) writeUrlState();
   }
+  window.addEventListener('popstate', function () { readUrlState(); setTab(currentTab, false); });
   tabCalendarBtn.addEventListener('click', function () { setTab('calendar'); });
   tabGoalsBtn.addEventListener('click', function () { setTab('goals'); });
+  function handleTabKeydown(event) {
+    var nextTab = null;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextTab = event.currentTarget === tabCalendarBtn ? tabGoalsBtn : tabCalendarBtn;
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextTab = event.currentTarget === tabCalendarBtn ? tabGoalsBtn : tabCalendarBtn;
+    else if (event.key === 'Home') nextTab = tabCalendarBtn;
+    else if (event.key === 'End') nextTab = tabGoalsBtn;
+    if (!nextTab) return;
+    event.preventDefault(); setTab(nextTab === tabCalendarBtn ? 'calendar' : 'goals'); nextTab.focus();
+  }
+  tabCalendarBtn.addEventListener('keydown', handleTabKeydown);
+  tabGoalsBtn.addEventListener('keydown', handleTabKeydown);
 
   // ---------- Calendar ----------
   var monthLabel = document.getElementById('monthLabel');
   var dayGrid = document.getElementById('dayGrid');
-  document.getElementById('prevMonthBtn').addEventListener('click', function () { currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1); renderCalendar(); });
-  document.getElementById('nextMonthBtn').addEventListener('click', function () { currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1); renderCalendar(); });
-  document.getElementById('todayBtn').addEventListener('click', function () { currentMonth = startOfMonth(new Date()); renderCalendar(); });
+  document.getElementById('prevMonthBtn').addEventListener('click', function () { currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1); renderCalendar(); writeUrlState(); });
+  document.getElementById('nextMonthBtn').addEventListener('click', function () { currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1); renderCalendar(); writeUrlState(); });
+  document.getElementById('todayBtn').addEventListener('click', function () { currentMonth = startOfMonth(new Date()); renderCalendar(); writeUrlState(); });
 
   function renderCalendar() {
-    renderFilterRow(document.getElementById('calFilterRow'), calFilter, function (key) { calFilter = key; renderCalendar(); });
-    monthLabel.textContent = MONTH_NAMES[currentMonth.getMonth()] + ' ' + currentMonth.getFullYear();
+    renderFilterRow(document.getElementById('calFilterRow'), calFilter, function (key) { calFilter = key; renderCalendar(); writeUrlState(); });
+    monthLabel.textContent = currentMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
     dayGrid.innerHTML = '';
     var firstWeekday = (currentMonth.getDay() + 6) % 7;
     var daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
@@ -575,15 +710,20 @@
       var cellDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), dayNum);
       var key = toISODate(cellDate);
       var outside = dayNum < 1 || dayNum > daysInMonth;
-      var cell = document.createElement('div');
+      var cell = document.createElement('button');
+      cell.type = 'button';
       cell.className = 'day-cell' + (outside ? ' outside' : '') + (key === todayKey ? ' today' : '');
+      if (key === todayKey) cell.setAttribute('aria-current', 'date');
       var num = document.createElement('div'); num.className = 'day-num'; num.textContent = cellDate.getDate();
       cell.appendChild(num);
 
       var dayEvents = (state.events[key] || []).filter(function (ev) { return calFilter === 'all' || ev.owner === calFilter; });
+      var dateLabel = cellDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      cell.setAttribute('aria-label', dateLabel + (dayEvents.length ? '. Plans: ' + dayEvents.map(function (ev) { return (ev.time ? ev.time + ' ' : '') + ev.title; }).join(', ') : '. No plans'));
       dayEvents.slice(0, 3).forEach(function (ev) {
         var chip = document.createElement('div'); chip.className = 'chip';
-        chip.style.background = ownerColor(ev.owner);
+        var presentation = ownerPresentation(ev.owner);
+        chip.style.background = presentation.background; chip.style.color = presentation.color;
         chip.textContent = (ev.time ? ev.time + ' ' : '') + ev.title;
         cell.appendChild(chip);
       });
@@ -611,12 +751,13 @@
     var d = parseISODate(key);
     dayModalTitle.textContent = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
     eventTitleInput.value = ''; eventTimeInput.value = ''; eventErr.textContent = '';
+    eventTitleInput.removeAttribute('aria-invalid');
     selectedEventOwner = 'both';
     renderOwnerPicker(eventOwnerPicker, selectedEventOwner, function (v) {
       selectedEventOwner = v; renderOwnerPicker(eventOwnerPicker, v, arguments.callee);
     });
     renderExistingEvents();
-    dayModalBackdrop.classList.add('open'); backdrop.classList.add('open');
+    openOverlay(dayModalBackdrop, eventTitleInput);
   }
   function renderExistingEvents() {
     dayExistingList.innerHTML = '';
@@ -626,8 +767,10 @@
       var dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = ownerColor(ev.owner);
       var name = document.createElement('span'); name.className = 'name';
       name.textContent = (ev.time ? ev.time + ' — ' : '') + ev.title + ' · ' + ownerLabel(ev.owner);
-      var del = document.createElement('button'); del.innerHTML = '&times;';
+      var del = document.createElement('button'); del.type = 'button'; del.innerHTML = '&times;';
+      del.setAttribute('aria-label', 'Delete plan: ' + ev.title);
       del.addEventListener('click', function () {
+        if (!window.confirm('Delete "' + ev.title + '" from this day?')) return;
         state.events[activeDayKey] = state.events[activeDayKey].filter(function (e) { return e.id !== ev.id; });
         saveState(); renderExistingEvents(); renderCalendar();
       });
@@ -636,13 +779,12 @@
     });
   }
   function closeDayModal() {
-    dayModalBackdrop.classList.remove('open');
-    if (!settingsPanel.classList.contains('open') && !document.getElementById('goalModalBackdrop').classList.contains('open')) backdrop.classList.remove('open');
+    closeOverlay(dayModalBackdrop);
   }
   document.getElementById('dayModalCloseBtn').addEventListener('click', closeDayModal);
   document.getElementById('addEventBtn').addEventListener('click', function () {
     var title = eventTitleInput.value.trim();
-    if (!title) { eventErr.textContent = 'Give this plan a title.'; return; }
+    if (!title) { eventErr.textContent = 'Give this plan a title.'; eventTitleInput.setAttribute('aria-invalid', 'true'); eventTitleInput.focus(); return; }
     if (!state.events[activeDayKey]) state.events[activeDayKey] = [];
     state.events[activeDayKey].push({
       id: 'e' + Date.now() + Math.random().toString(16).slice(2),
@@ -651,13 +793,22 @@
     state.events[activeDayKey].sort(function (a, b) { return (a.time || '99:99').localeCompare(b.time || '99:99'); });
     saveState();
     eventTitleInput.value = ''; eventTimeInput.value = ''; eventErr.textContent = '';
+    eventTitleInput.removeAttribute('aria-invalid');
     renderExistingEvents(); renderCalendar();
+  });
+  dayModalBackdrop.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && event.target.matches('input[type="text"], input[type="time"]')) {
+      event.preventDefault(); document.getElementById('addEventBtn').click();
+    }
+  });
+  eventTitleInput.addEventListener('input', function () {
+    if (eventTitleInput.value.trim()) { eventErr.textContent = ''; eventTitleInput.removeAttribute('aria-invalid'); }
   });
 
   // ---------- Goals ----------
   var goalsTimeline = document.getElementById('goalsTimeline');
   function renderGoals() {
-    renderFilterRow(document.getElementById('goalsFilterRow'), goalsFilter, function (key) { goalsFilter = key; renderGoals(); });
+    renderFilterRow(document.getElementById('goalsFilterRow'), goalsFilter, function (key) { goalsFilter = key; renderGoals(); writeUrlState(); });
     goalsTimeline.innerHTML = '';
     var goals = state.goals.filter(function (g) { return goalsFilter === 'all' || g.owner === goalsFilter; });
     var today = new Date(); today.setHours(0,0,0,0);
@@ -695,26 +846,30 @@
     } else {
       goals.forEach(function (g) {
         var row = document.createElement('div'); row.className = 'goal-row';
-        var label = document.createElement('div'); label.className = 'goal-label';
+        row.setAttribute('role', 'group');
+        row.setAttribute('aria-label', g.name + ', ' + (g.progress || 0) + '% complete');
+        var label = document.createElement('button'); label.type = 'button'; label.className = 'goal-label';
         var ldot = document.createElement('span'); ldot.className = 'dot'; ldot.style.background = ownerColor(g.owner);
+        ldot.setAttribute('aria-hidden', 'true');
         label.appendChild(ldot);
         var ltxt = document.createElement('span'); ltxt.textContent = g.name;
         label.appendChild(ltxt);
         label.title = 'Edit "' + g.name + '"';
+        label.setAttribute('aria-label', 'Edit goal: ' + g.name + ', ' + (g.progress || 0) + '% complete');
         label.addEventListener('click', function () { openGoalModal(g.id); });
 
         var track = document.createElement('div'); track.className = 'goal-track'; track.style.width = timelineWidth + 'px';
         var start = parseISODate(g.start), end = parseISODate(g.end);
         var left = daysBetween(rangeStart, start) * DAY_WIDTH;
         var width = Math.max((daysBetween(start, end) + 1) * DAY_WIDTH, DAY_WIDTH * 2);
-        var bar = document.createElement('div'); bar.className = 'goal-bar';
-        bar.style.left = left + 'px'; bar.style.width = width + 'px'; bar.style.background = ownerColor(g.owner);
+        var bar = document.createElement('div'); bar.className = 'goal-bar'; bar.setAttribute('aria-hidden', 'true');
+        var presentation = ownerPresentation(g.owner);
+        bar.style.left = left + 'px'; bar.style.width = width + 'px'; bar.style.background = presentation.background;
+        bar.style.color = presentation.color;
         var fill = document.createElement('div'); fill.className = 'fill'; fill.style.width = (100 - (g.progress || 0)) + '%'; fill.style.left = (g.progress || 0) + '%';
         bar.appendChild(fill);
         var pct = document.createElement('span'); pct.className = 'pct'; pct.textContent = (g.progress || 0) + '%';
         bar.appendChild(pct);
-        bar.addEventListener('click', function () { openGoalModal(g.id); });
-
         track.appendChild(bar);
         row.appendChild(label); row.appendChild(track);
         goalsTimeline.appendChild(row);
@@ -752,27 +907,33 @@
     goalProgressInput.value = g ? g.progress : 0;
     goalProgressVal.textContent = (g ? g.progress : 0) + '%';
     goalErr.textContent = '';
+    [goalNameInput, goalStartInput, goalEndInput].forEach(function (input) { input.removeAttribute('aria-invalid'); });
     deleteGoalBtn.style.display = g ? '' : 'none';
     renderOwnerPicker(goalOwnerPicker, selectedGoalOwner, function (v) {
       selectedGoalOwner = v; renderOwnerPicker(goalOwnerPicker, v, arguments.callee);
     });
-    goalModalBackdrop.classList.add('open'); backdrop.classList.add('open');
+    openOverlay(goalModalBackdrop, goalNameInput);
   }
   function closeGoalModal() {
-    goalModalBackdrop.classList.remove('open');
-    if (!settingsPanel.classList.contains('open') && !dayModalBackdrop.classList.contains('open')) backdrop.classList.remove('open');
+    closeOverlay(goalModalBackdrop);
   }
   document.getElementById('goalModalCloseBtn').addEventListener('click', closeGoalModal);
   goalProgressInput.addEventListener('input', function () { goalProgressVal.textContent = goalProgressInput.value + '%'; });
   deleteGoalBtn.addEventListener('click', function () {
+    var goal = state.goals.find(function (item) { return item.id === editingGoalId; });
+    if (goal && !window.confirm('Delete the goal "' + goal.name + '"?')) return;
     state.goals = state.goals.filter(function (g) { return g.id !== editingGoalId; });
     saveState(); closeGoalModal(); renderGoals();
   });
   document.getElementById('saveGoalBtn').addEventListener('click', function () {
     var name = goalNameInput.value.trim();
-    if (!name) { goalErr.textContent = 'Give this goal a name.'; return; }
-    if (!goalStartInput.value || !goalEndInput.value) { goalErr.textContent = 'Pick a start and target date.'; return; }
-    if (goalEndInput.value < goalStartInput.value) { goalErr.textContent = 'Target date should be after the start.'; return; }
+    if (!name) { goalErr.textContent = 'Give this goal a name.'; goalNameInput.setAttribute('aria-invalid', 'true'); goalNameInput.focus(); return; }
+    if (!goalStartInput.value || !goalEndInput.value) {
+      goalErr.textContent = 'Pick a start and target date.';
+      var missingDate = !goalStartInput.value ? goalStartInput : goalEndInput;
+      missingDate.setAttribute('aria-invalid', 'true'); missingDate.focus(); return;
+    }
+    if (goalEndInput.value < goalStartInput.value) { goalErr.textContent = 'Target date should be after the start.'; goalEndInput.setAttribute('aria-invalid', 'true'); goalEndInput.focus(); return; }
     if (editingGoalId) {
       var g = state.goals.find(function (x) { return x.id === editingGoalId; });
       g.name = name; g.start = goalStartInput.value; g.end = goalEndInput.value;
@@ -785,6 +946,17 @@
       });
     }
     saveState(); closeGoalModal(); renderGoals();
+  });
+  goalModalBackdrop.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && event.target.matches('input[type="text"], input[type="date"]')) {
+      event.preventDefault(); document.getElementById('saveGoalBtn').click();
+    }
+  });
+  [goalNameInput, goalStartInput, goalEndInput].forEach(function (input) {
+    input.addEventListener('input', function () {
+      goalErr.textContent = '';
+      [goalNameInput, goalStartInput, goalEndInput].forEach(function (field) { field.removeAttribute('aria-invalid'); });
+    });
   });
 
   // ---------- Export to Calendar (.ics) ----------
@@ -868,8 +1040,8 @@
 
   applyTheme();
   renderCoupleLegend();
-  renderCalendar();
-  setTab('calendar');
+  readUrlState();
+  setTab(currentTab, false);
 })();
 </script>
 </body>
