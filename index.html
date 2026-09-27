@@ -25,6 +25,7 @@
     --accent: #C9A227;
     --accent-ink: #2B2118;
     --error: #A12D23;
+    --danger: #B13E36;
     --shadow: 0 8px 24px rgba(28,31,27,0.07);
     --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
     --font-body: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -40,6 +41,7 @@
       --bg: #111315; --surface: #191C1F; --surface-raised: #22262A;
       --ink: #F1F0EA; --ink-soft: #B7B7AF;
       --error: #FF8A80;
+      --danger: #FF8A80;
       --line: rgba(241,240,234,0.14); --line-soft: rgba(241,240,234,0.08);
       --shadow: 0 8px 24px rgba(0,0,0,0.28); --texture-opacity: 0.04;
     }
@@ -49,6 +51,7 @@
     --bg: #111315; --surface: #191C1F; --surface-raised: #22262A;
     --ink: #F1F0EA; --ink-soft: #B7B7AF;
     --error: #FF8A80;
+    --danger: #FF8A80;
     --line: rgba(241,240,234,0.14); --line-soft: rgba(241,240,234,0.08);
     --shadow: 0 8px 24px rgba(0,0,0,0.28); --texture-opacity: 0.04;
   }
@@ -180,7 +183,8 @@
   .existing-item { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
   .existing-item .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
   .existing-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .existing-item button { width: 44px; min-width: 44px; border: none; border-radius: var(--radius-control); background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 18px; padding: 2px 4px; }
+  .existing-item button { width: 44px; min-width: 44px; border: none; border-radius: var(--radius-control); background: transparent; color: var(--danger); cursor: pointer; font-family: 'Segoe UI Symbol', sans-serif; font-size: 20px; line-height: 1; padding: 2px 4px; }
+  .existing-item button:hover { background: var(--line-soft); }
   .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 10px; }
   .btn-primary { background: var(--accent); color: var(--accent-ink); border: none; border-radius: 10px; padding: 10px 18px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: var(--font-body); }
   .btn-text { background: transparent; border: none; color: var(--ink-soft); cursor: pointer; font-size: 13px; font-family: var(--font-body); padding: 10px 8px; }
@@ -767,7 +771,7 @@
       var dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = ownerColor(ev.owner);
       var name = document.createElement('span'); name.className = 'name';
       name.textContent = (ev.time ? ev.time + ' — ' : '') + ev.title + ' · ' + ownerLabel(ev.owner);
-      var del = document.createElement('button'); del.type = 'button'; del.innerHTML = '&times;';
+      var del = document.createElement('button'); del.type = 'button'; del.innerHTML = '&#128465;&#65038;';
       del.setAttribute('aria-label', 'Delete plan: ' + ev.title);
       del.addEventListener('click', function () {
         if (!window.confirm('Delete "' + ev.title + '" from this day?')) return;
