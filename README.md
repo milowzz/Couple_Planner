@@ -13,6 +13,12 @@ A shared calendar and goals planner for two authorized users. The site is a sing
 - Export of plans and goals to an `.ics` calendar file
 - URL state for the selected view, filters, and month
 
+## Screenshots
+
+Current sign-in screen:
+
+![Planner sign-in screen](docs/images/planner-screenshot.png)
+
 ## Project Structure
 
 - `index.html` contains the markup, styles, app logic, and Firebase client configuration.
