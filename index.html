@@ -137,7 +137,7 @@
   .day-cell.today { border-color: var(--accent); border-width: 1.5px; }
   .day-num { font-size: 13px; font-weight: 600; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
   .day-cell.today .day-num { color: var(--ink); font-weight: 700; }
-  .chip { font-size: 11px; padding: 2px 6px; border-radius: 6px; color: #FBF6EA; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { display: block; width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; font-size: 11px; padding: 2px 6px; border-radius: 6px; color: #FBF6EA; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .chip-more { font-size: 10.5px; color: var(--ink-soft); padding-left: 4px; }
 
   .goals-card { padding: 18px; }
@@ -227,7 +227,8 @@
     .month-ticks { margin-left: 110px; }
     .app { padding: 18px 14px 48px; }
     header.top { align-items: center; margin-bottom: 18px; }
-    .title-input { max-width: 55vw; font-size: 28px; }
+    .title-wrap { flex: 1 1 100%; width: 100%; }
+    .title-input { width: 100%; max-width: 100%; font-size: 28px; }
     .day-cell { min-height: 64px; padding: 5px; }
     .cal-nav { padding: 13px 12px; }
     .cal-nav .month-label { font-size: 18px; }
@@ -1002,6 +1003,7 @@
         var presentation = ownerPresentation(ev.owner);
         chip.style.background = presentation.background; chip.style.color = presentation.color;
         chip.textContent = (ev.time ? ev.time + ' ' : '') + ev.title;
+        chip.title = (ev.time ? ev.time + ' ' : '') + ev.title;
         cell.appendChild(chip);
       });
       if (dayEvents.length > 3) {
