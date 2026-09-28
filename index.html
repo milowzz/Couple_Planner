@@ -671,6 +671,13 @@
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function toISODate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function parseISODate(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function formatEventTime(time) {
+    if (!time) return '';
+    var parts = time.split(':').map(Number);
+    if (parts.length !== 2 || !Number.isFinite(parts[0]) || !Number.isFinite(parts[1])) return time;
+    return new Date(2000, 0, 1, parts[0], parts[1]).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+  function eventDisplayText(event) { return (event.time ? formatEventTime(event.time) + ' ' : '') + event.title; }
   function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
   function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
   var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -997,13 +1004,13 @@
 
       var dayEvents = (state.events[key] || []).filter(function (ev) { return calFilter === 'all' || ev.owner === calFilter; });
       var dateLabel = cellDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      cell.setAttribute('aria-label', dateLabel + (dayEvents.length ? '. Plans: ' + dayEvents.map(function (ev) { return (ev.time ? ev.time + ' ' : '') + ev.title; }).join(', ') : '. No plans'));
+      cell.setAttribute('aria-label', dateLabel + (dayEvents.length ? '. Plans: ' + dayEvents.map(eventDisplayText).join(', ') : '. No plans'));
       dayEvents.slice(0, 3).forEach(function (ev) {
         var chip = document.createElement('div'); chip.className = 'chip';
         var presentation = ownerPresentation(ev.owner);
         chip.style.background = presentation.background; chip.style.color = presentation.color;
-        chip.textContent = (ev.time ? ev.time + ' ' : '') + ev.title;
-        chip.title = (ev.time ? ev.time + ' ' : '') + ev.title;
+        chip.textContent = eventDisplayText(ev);
+        chip.title = eventDisplayText(ev);
         cell.appendChild(chip);
       });
       if (dayEvents.length > 3) {
@@ -1045,7 +1052,7 @@
       var row = document.createElement('div'); row.className = 'existing-item';
       var dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = ownerColor(ev.owner);
       var name = document.createElement('span'); name.className = 'name';
-      name.textContent = (ev.time ? ev.time + ' — ' : '') + ev.title + ' · ' + ownerLabel(ev.owner);
+      name.textContent = (ev.time ? formatEventTime(ev.time) + ' — ' : '') + ev.title + ' · ' + ownerLabel(ev.owner);
       var del = document.createElement('button'); del.type = 'button'; del.innerHTML = '&#128465;&#65038;';
       del.setAttribute('aria-label', 'Delete plan: ' + ev.title);
       del.addEventListener('click', function () {
